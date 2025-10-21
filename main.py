@@ -6,19 +6,16 @@ import numpy as np
 from utils.readcvs import X, y, data
 from utils.gradient_descent import gradient_descent_fit
 
-# -------------------------------
+
 # Train model once at startup
-# -------------------------------
+
 B_final = gradient_descent_fit(X, y)
 print("Model training completed!")
 print(f"Final weights: {B_final}")
 
-# -------------------------------
-# Initialize FastAPI
-# -------------------------------
 app = FastAPI(title="Store Sales Predictor API")
 
-# CORS middleware - ADD YOUR FRONTEND PORT
+# CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000", "http://localhost:5174", "http://127.0.0.1:3000", "http://127.0.0.1:5174",
@@ -29,9 +26,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# -------------------------------
-# Pydantic models
-# -------------------------------
+
 class SalesInput(BaseModel):
     TotalGasGallons: float
     LottoSales: float
@@ -45,16 +40,13 @@ class ModelInfoResponse(BaseModel):
     features: List[str]
     data_points: int
 
-# -------------------------------
 # Root endpoint
-# -------------------------------
 @app.get("/")
 def read_root():
     return {"message": "Welcome to Store Sales Predictor API"}
 
-# -------------------------------
+
 # Single prediction
-# -------------------------------
 @app.post("/predict")
 def predict_sales(sales: SalesInput):
     X_new = [1, sales.TotalGasGallons, sales.LottoSales, sales.DayType]
@@ -68,9 +60,7 @@ def predict_sales(sales: SalesInput):
         }
     }
 
-# -------------------------------
 # Batch predictions for charting
-# -------------------------------
 @app.post("/predict_batch")
 def predict_batch(sales_batch: SalesBatchInput):
     predictions = []
@@ -79,17 +69,15 @@ def predict_batch(sales_batch: SalesBatchInput):
         predictions.append(float(np.dot(X_new, B_final)))
     return {"predicted_sales": predictions}
 
-# -------------------------------
+
 # Historical data
-# -------------------------------
 @app.get("/history")
 def get_history():
     history = data.to_dict(orient="records")
     return {"history": history, "total_records": len(history)}
 
-# -------------------------------
+
 # Model information
-# -------------------------------
 @app.get("/model_info")
 def get_model_info():
     return ModelInfoResponse(
@@ -98,9 +86,7 @@ def get_model_info():
         data_points=len(data)
     )
 
-# -------------------------------
 # Sample prediction ranges for frontend sliders
-# -------------------------------
 @app.get("/sample_ranges")
 def get_sample_ranges():
     return {
@@ -116,9 +102,8 @@ def get_sample_ranges():
         }
     }
 
-# -------------------------------
+
 # Weekly sales JSON for React chart
-# -------------------------------
 @app.get("/weekly_sales_json")
 def weekly_sales_json():
     weeks = list(range(1, len(data) + 1))  # simple week numbers
@@ -138,12 +123,9 @@ def weekly_sales_json():
         "predicted_sales": predicted_sales
     }
 
-# -------------------------------
-# ADD THIS ENDPOINT - Chart data that frontend expects
-# -------------------------------
+# Chart data for frontend
 @app.get("/chart_data")
 def get_chart_data():
-    """Endpoint that matches what the frontend expects"""
     chart_data = []
     for i, (_, row) in enumerate(data.iterrows()):
         chart_data.append({
@@ -155,16 +137,12 @@ def get_chart_data():
         })
     return chart_data
 
-# -------------------------------
 # Health check endpoint
-# -------------------------------
 @app.get("/health")
 def health_check():
     return {"status": "healthy", "model_loaded": True}
 
-# -------------------------------
-# Run server
-# -------------------------------
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

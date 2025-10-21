@@ -2,7 +2,6 @@ import numpy as np
 from .readcvs import X, y
 
 def gradient_descent_fit(X, y, alpha=0.001, tolerance=1e-6):
-    # Standardize features (exclude intercept)
     X_new = X[:, 1:]
     X_mean = np.mean(X_new, axis=0)
     X_std = np.std(X_new, axis=0)
@@ -40,22 +39,7 @@ def gradient_descent_fit(X, y, alpha=0.001, tolerance=1e-6):
 
     return B_unstandardized
 
-# Run your fixed original code
-B_final = gradient_descent_fit(X, y, alpha=0.001, tolerance=1e-6)
-print("Unstandardized coefficients:", B_final)
 
-# Example prediction
-X_new_example = [1, 520, 190, 0]  # 1 for intercept
-y_pred_example = np.dot(X_new_example, B_final)
-print("Predicted Total Sales:", y_pred_example)
-
-
-
-
-B_final = gradient_descent_fit(X, y, alpha=0.001, tolerance=1e-6)
-
-
-y_pred_all = X @ B_final
 
 
 # import matplotlib.pyplot as plt
